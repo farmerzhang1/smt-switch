@@ -22,15 +22,14 @@ if [ ! -d "$DEPS/z3" ]; then
     chmod -R 777 z3
     cd z3
     git checkout -f $Z3_VERSION
-    # a static binary linked to z3 often segfaults due to
-    # a pthread related issue
-    # compiling with --single-threaded helps, but isn't a real solution
-    # see https://github.com/Z3Prover/z3/issues/4554
     cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DZ3_BUILD_LIBZ3_SHARED=Off -DZ3_BUILD_LIBZ3_MSVC_STATIC=On
+    cd $DIR
+fi
+
+if [ ! -f $DEPS/z3/build/libz3.a ]; then
+    cd $DEPS/z3
     cmake --build build -j$NUM_CORES
     cd $DIR
-else
-    echo "$DEPS/z3 already exists. If you want to rebuild, please remove it manually."
 fi
 
 if [ -f $DEPS/z3/build/libz3.a ]; then

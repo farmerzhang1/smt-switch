@@ -9,7 +9,7 @@ mkdir -p $DEPS
 if [ -d "$DEPS/flex" ]; then
     echo "It appears flex has already been downloaded to $DEPS/flex"
     echo "If you'd like to rebuild, please delete it and run this script again"
-    exit 1
+    exit 0
 fi
 
 curl -Lk https://github.com/westes/flex/releases/download/v2.6.4/flex-2.6.4.tar.gz --output $DEPS/flex-2.6.4.tar.gz

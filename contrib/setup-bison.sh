@@ -9,7 +9,7 @@ mkdir -p $DEPS
 if [ -d "$DEPS/bison" ]; then
     echo "It appears bison has already been downloaded to $DEPS/bison"
     echo "If you'd like to rebuild, please delete it and run this script again"
-    exit 1
+    exit 0
 fi
 
 curl http://ftp.gnu.org/gnu/bison/bison-3.7.tar.xz --output $DEPS/bison-3.7.tar.xz

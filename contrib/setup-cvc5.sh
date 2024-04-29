@@ -23,11 +23,13 @@ if [ ! -d "$DEPS/cvc5" ]; then
     cd cvc5
     git checkout -f ${CVC5_VERSION}
     CXXFLAGS=-fPIC CFLAGS=-fPIC ./configure.sh --static --auto-download
-    cd build
+    cd $DIR
+fi
+
+if [ ! -f $DEPS/cvc5/build/src/libcvc5.a ] || [ ! -f $DEPS/cvc5/build/src/parser/libcvc5parser.a ]; then
+    cd $DEPS/cvc5/build
     make -j$NUM_CORES
     cd $DIR
-else
-    echo "$DEPS/cvc5 already exists. If you want to rebuild, please remove it manually."
 fi
 
 if [ -f $DEPS/cvc5/build/src/libcvc5.a ] && [ -f $DEPS/cvc5/build/src/parser/libcvc5parser.a ]; then
