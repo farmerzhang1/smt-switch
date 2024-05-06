@@ -70,9 +70,9 @@ using namespace std;
 %token <std::string> BVDEC
 %token <std::string> QUOTESTRING
 %token SETLOGIC SETOPT SETINFO DECLARECONST DECLAREFUN
-       DECLARESORT DEFINEFUN DEFINESORT ASSERT CHECKSAT
+       DECLARESORT DECLAREDT DEFINEFUN DEFINESORT ASSERT CHECKSAT
        CHECKSATASSUMING PUSH POP EXIT GETVALUE
-       GETUNSATASSUMP ECHO
+       GETUNSATASSUMP ECHO PAR
 %token ASCONST LET
 %token <std::string> KEYWORD
 %token <std::string> QUANTIFIER
@@ -105,8 +105,11 @@ EP "!"
 %nterm <std::string> s_expr_list
 %nterm <std::pair<std::string, std::string>> attribute
 %nterm <std::vector<std::pair<std::string, std::string>>> attributes
-
-
+%nterm <smt::DatatypeDecl> datatype_dec
+%nterm constructor_dec_list
+%nterm <smt::DatatypeConstructorDecl> constructor_dec
+%nterm selector_dec_list
+%nterm selector_dec
 %%
 
 smt2:
@@ -159,6 +162,14 @@ command:
   {
     drv.define_sort($3, drv.solver()->make_sort($3, std::stoi($4)));
   }
+  | LP DECLAREDT SYMBOL
+    {
+      drv.declare_dt($3);
+    }
+    datatype_dec RP
+    {
+      drv.define_sort($3, drv.solver()->make_sort($5));
+    }
   | LP DEFINEFUN
      {
        // new scope for arguments
@@ -437,6 +448,40 @@ sort:
      }
    }
 ;
+
+datatype_dec:
+  LP constructor_dec_list RP
+  { $$ = drv.get_datatype(); }
+  | PAR
+  { }
+;
+
+constructor_dec_list:
+  %empty 
+  {}
+  | constructor_dec_list constructor_dec {
+    drv.add_constructor($2);
+  }
+;
+
+constructor_dec:
+  LP SYMBOL {
+    drv.declare_cons($2);
+  } selector_dec_list RP {
+    $$ = drv.get_constructor();
+  }
+;
+
+selector_dec_list:
+  %empty {}
+  | selector_dec_list selector_dec {
+  }
+;
+
+selector_dec:
+  LP SYMBOL sort RP {
+    drv.add_selector($2, $3);
+  }
 
 sort_list:
    %empty

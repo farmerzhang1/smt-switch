@@ -58,6 +58,7 @@ set-info              { return smtlib::parser::make_SETINFO(loc); }
 declare-const         { return smtlib::parser::make_DECLARECONST(loc); }
 declare-fun           { return smtlib::parser::make_DECLAREFUN(loc); }
 declare-sort          { return smtlib::parser::make_DECLARESORT(loc); }
+declare-datatype      { return smtlib::parser::make_DECLAREDT(loc); }
 define-fun            { return smtlib::parser::make_DEFINEFUN(loc); }
 define-sort           { return smtlib::parser::make_DEFINESORT(loc); }
 assert                { return smtlib::parser::make_ASSERT(loc); }
@@ -69,7 +70,7 @@ exit                  { return smtlib::parser::make_EXIT(loc); }
 get-value[ \t\r]*     { return smtlib::parser::make_GETVALUE(loc); }
 get-unsat-assumptions { return smtlib::parser::make_GETUNSATASSUMP(loc); }
 echo                  { return smtlib::parser::make_ECHO(loc); }
-
+par                   { return smtlib::parser::make_PAR(loc); }
 \"(\\.|[^\"\\])*\"    { char * noquotes = yytext;
                         noquotes++;
                         noquotes[strlen(noquotes)-1] = 0;

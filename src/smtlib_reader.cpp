@@ -413,7 +413,7 @@ Term SmtLibReader::apply_define_fun(const string & defname,
 {
   UnorderedTermMap subs_map;
   size_t num_args = args.size();
-  assert(num_args); // apply_define_fun only for defines which take arguments
+  assert(num_args);  // apply_define_fun only for defines which take arguments
 
   auto it = defs_.find(defname);
 
@@ -438,6 +438,29 @@ Term SmtLibReader::apply_define_fun(const string & defname,
   return solver_->substitute(def, subs_map);
 }
 
+bool SmtLibReader::check_define_fun(const std::string & defname)
+{
+  return defs_.count(defname);
+}
+
+void SmtLibReader::declare_dt(const std::string & sym)
+{
+  std::cout << "test sym: " << sym;
+  datatype_dec = solver_->make_datatype_decl(sym);
+}
+void SmtLibReader::add_constructor(const smt::DatatypeConstructorDecl & con)
+{
+  solver_->add_constructor(datatype_dec, con);
+}
+void SmtLibReader::declare_cons(const std::string & sym)
+{
+  constructor_dec = solver_->make_datatype_constructor_decl(sym);
+}
+void SmtLibReader::add_selector(const std::string & name, const smt::Sort & s)
+{
+  solver_->add_selector(constructor_dec, name, s);
+}
+
 Term SmtLibReader::register_arg(const string & name, const Sort & sort)
 {
   assert(current_scope());
@@ -458,8 +481,8 @@ Term SmtLibReader::register_arg(const string & name, const Sort & sort)
   Term tmpvar;
   if (id >= tmp_args_[sort].size())
   {
-    tmpvar = solver_->make_symbol(def_arg_prefix_ + sort->to_string() +
-                                  std::to_string(id), sort);
+    tmpvar = solver_->make_symbol(
+        def_arg_prefix_ + sort->to_string() + std::to_string(id), sort);
     tmp_args_[sort].push_back(tmpvar);
   }
   else

@@ -233,7 +233,7 @@ class SmtLibReader
    *         declaration will be replaced by these arguments
    */
   Term apply_define_fun(const std::string & defname, const smt::TermVec & args);
-
+  bool check_define_fun(const std::string & defname);
   /** Helper function for define-fun - similar to new_symbol
    *  Associates an argument with a temporary symbol for
    *  define-fun arguments
@@ -256,8 +256,7 @@ class SmtLibReader
    *  @param name the name of the defined sort
    *  @param sort the sort to associate name with
    */
-  void define_sort(const std::string & name,
-                   const smt::Sort & sort);
+  void define_sort(const std::string & name, const smt::Sort & sort);
 
   /** Looks up a defined sort by name
    *  @param name the name to look up
@@ -280,6 +279,12 @@ class SmtLibReader
    *  @param term the term
    */
   void let_binding(const std::string & sym, const smt::Term & term);
+  void declare_dt(const std::string & sym);
+  void add_constructor(const smt::DatatypeConstructorDecl &);
+  inline smt::DatatypeConstructorDecl get_constructor() { return constructor_dec; }
+  inline smt::DatatypeDecl get_datatype() { return datatype_dec; }
+  void declare_cons(const std::string & sym);
+  void add_selector(const std::string &, const smt::Sort &);
 
  protected:
   smtlib::location location_;
@@ -307,8 +312,8 @@ class SmtLibReader
                      ///< even after context is popped
 
   std::unordered_map<std::string, smt::Sort>
-    defined_sorts_; ///< mapping from symbol to defined sort
-                    ///< currently only supports 0-arity defines
+      defined_sorts_;  ///< mapping from symbol to defined sort
+                       ///< currently only supports 0-arity defines
 
   UnorderedScopedSymbolMap
       global_symbols_;  ///< symbolic constants and functions
@@ -341,6 +346,8 @@ class SmtLibReader
 
   // useful constants
   std::string def_arg_prefix_;  ///< the prefix for renamed define-fun arguments
+  smt::DatatypeDecl  datatype_dec;
+  smt::DatatypeConstructorDecl constructor_dec;
 };
 
 }  // namespace smt
