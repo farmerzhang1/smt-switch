@@ -168,7 +168,9 @@ command:
     }
     datatype_dec RP
     {
-      drv.define_sort($3, drv.solver()->make_sort($5));
+      auto s = drv.solver()->make_sort($5);
+      drv.define_sort($3, s);
+      drv.register_dt_components(s);
     }
   | LP DEFINEFUN
      {
@@ -287,9 +289,14 @@ term_s_expr:
     }
     else
     {
-      // assuming this is a defined fun
-      // will throw exception if not a defined function symbol
-      $$ = drv.apply_define_fun($2, *$3);
+      if (drv.is_define_fun($2))
+        $$ = drv.apply_define_fun($2, *$3);
+      else if (drv.is_constructor($2))
+        $$ = drv.apply_constructor($2, *$3);
+      else if (drv.is_tester($2))
+        $$ = drv.apply_tester($2, *$3);
+      else if (drv.is_selector($2))
+        $$ = drv.apply_selector($2, *$3);
     }
     delete $3;
   }

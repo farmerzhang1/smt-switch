@@ -16,10 +16,10 @@
 
 #pragma once
 
-#include "assert.h"
 #include <string>
 #include <unordered_map>
 
+#include "assert.h"
 #include "smt.h"
 #include "smtlibparser.h"
 
@@ -233,7 +233,15 @@ class SmtLibReader
    *         declaration will be replaced by these arguments
    */
   Term apply_define_fun(const std::string & defname, const smt::TermVec & args);
-  bool check_define_fun(const std::string & defname);
+  Term apply_constructor(const std::string & defname,
+                         const smt::TermVec & args);
+  Term apply_tester(const std::string & defname, const smt::TermVec & args);
+  Term apply_selector(const std::string & defname, const smt::TermVec & args);
+
+  bool is_define_fun(const std::string & defname);
+  bool is_selector(const std::string & defname);
+  bool is_constructor(const std::string & defname);
+  bool is_tester(const std::string & defname);
   /** Helper function for define-fun - similar to new_symbol
    *  Associates an argument with a temporary symbol for
    *  define-fun arguments
@@ -281,10 +289,14 @@ class SmtLibReader
   void let_binding(const std::string & sym, const smt::Term & term);
   void declare_dt(const std::string & sym);
   void add_constructor(const smt::DatatypeConstructorDecl &);
-  inline smt::DatatypeConstructorDecl get_constructor() { return constructor_dec; }
+  inline smt::DatatypeConstructorDecl get_constructor()
+  {
+    return constructor_dec;
+  }
   inline smt::DatatypeDecl get_datatype() { return datatype_dec; }
   void declare_cons(const std::string & sym);
   void add_selector(const std::string &, const smt::Sort &);
+  void register_dt_components(const Sort &);
 
  protected:
   smtlib::location location_;
@@ -330,6 +342,9 @@ class SmtLibReader
   // define-fun data structures
   std::unordered_map<std::string, smt::Term>
       defs_;  ///< keeps track of define-funs
+  std::unordered_map<std::string, smt::Term> constructors;
+  std::unordered_map<std::string, smt::Term> testers;
+  std::unordered_map<std::string, smt::Term> selectors;
   std::unordered_map<std::string, smt::TermVec>
       def_args_;  ///< keeps track of define-fun
                   ///< arguments
@@ -346,8 +361,12 @@ class SmtLibReader
 
   // useful constants
   std::string def_arg_prefix_;  ///< the prefix for renamed define-fun arguments
-  smt::DatatypeDecl  datatype_dec;
+  smt::DatatypeDecl datatype_dec;
   smt::DatatypeConstructorDecl constructor_dec;
+  std::string constructor_name;
+  std::unordered_set<std::string> temp_constructors;
+  std::unordered_map<std::string, std::unordered_set<std::string>>
+      temp_selectors;  // constructor to selectors
 };
 
 }  // namespace smt

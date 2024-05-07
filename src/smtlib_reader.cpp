@@ -438,27 +438,102 @@ Term SmtLibReader::apply_define_fun(const string & defname,
   return solver_->substitute(def, subs_map);
 }
 
-bool SmtLibReader::check_define_fun(const std::string & defname)
+Term SmtLibReader::apply_constructor(const string & defname,
+                                     const TermVec & args)
+{
+  auto cons = constructors[defname];
+  switch (args.size())
+  {
+    case 0: return solver_->make_term(smt::Apply_Constructor, cons);
+    case 1: return solver_->make_term(smt::Apply_Constructor, cons, args[0]);
+    case 2:
+      return solver_->make_term(smt::Apply_Constructor, cons, args[0], args[1]);
+    default:
+      throw SmtException(
+          defname + " constructor does not support more than 2 arguments");
+  }
+}
+
+Term SmtLibReader::apply_tester(const string & defname, const TermVec & args)
+{
+  auto tester = testers[defname];
+  switch (args.size())
+  {
+    case 1: return solver_->make_term(smt::Apply_Tester, tester, args[0]);
+    default:
+      throw SmtException(
+          defname + " tester not applied to correct number of arguments.");
+  }
+}
+
+Term SmtLibReader::apply_selector(const string & defname, const TermVec & args)
+{
+  auto selector = selectors[defname];
+  switch (args.size())
+  {
+    case 1: return solver_->make_term(smt::Apply_Selector, selector, args[0]);
+    default:
+      throw SmtException(
+          defname + " selector not applied to correct number of arguments.");
+  }
+}
+
+bool SmtLibReader::is_define_fun(const std::string & defname)
 {
   return defs_.count(defname);
 }
 
+bool SmtLibReader::is_selector(const std::string & defname)
+{
+  return selectors.count(defname);
+}
+
+bool SmtLibReader::is_constructor(const std::string & defname)
+{
+  return constructors.count(defname);
+}
+
+bool SmtLibReader::is_tester(const std::string & defname)
+{
+  return testers.count(defname);
+}
+
 void SmtLibReader::declare_dt(const std::string & sym)
 {
-  std::cout << "test sym: " << sym;
   datatype_dec = solver_->make_datatype_decl(sym);
 }
+
 void SmtLibReader::add_constructor(const smt::DatatypeConstructorDecl & con)
 {
   solver_->add_constructor(datatype_dec, con);
 }
+
 void SmtLibReader::declare_cons(const std::string & sym)
 {
   constructor_dec = solver_->make_datatype_constructor_decl(sym);
+  constructor_name = sym;
+  temp_constructors.insert(sym);
 }
+
 void SmtLibReader::add_selector(const std::string & name, const smt::Sort & s)
 {
+  temp_selectors[constructor_name].insert(name);
   solver_->add_selector(constructor_dec, name, s);
+}
+
+void SmtLibReader::register_dt_components(const Sort & s)
+{
+  for (auto & cons : temp_constructors)
+  {
+    constructors.insert({ cons, solver_->get_constructor(s, cons) });
+    testers.insert({ "is-" + cons, solver_->get_tester(s, cons) });
+    for (auto & selector : temp_selectors[cons])
+    {
+      selectors.insert({ selector, solver_->get_selector(s, cons, selector) });
+    }
+  }
+  temp_constructors.clear();
+  temp_selectors.clear();
 }
 
 Term SmtLibReader::register_arg(const string & name, const Sort & sort)
