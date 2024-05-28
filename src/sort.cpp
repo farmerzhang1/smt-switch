@@ -110,6 +110,9 @@ std::string AbsSort::to_string() const
   {
     return get_uninterpreted_name();
   }
+  else if (sk == DATATYPE) {
+    return get_datatype()->get_name();
+  }
   else
   {
     std::string msg("To string not implemented for SortKind = ");
