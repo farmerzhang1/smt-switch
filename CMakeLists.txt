@@ -67,7 +67,7 @@ if (SMTLIB_READER)
     list(APPEND CMAKE_PREFIX_PATH "${PROJECT_SOURCE_DIR}/deps/flex/flex-install")
   endif()
 
-  find_package(BISON 3.7.0 REQUIRED)
+  find_package(BISON 3.8.0 REQUIRED)
   find_package(FLEX 2.6.4 REQUIRED)
 
   if (BISON_FOUND)
